@@ -1,15 +1,29 @@
 name: Build APK
 on:
   workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch code, e.g. DHAKA (leave empty for a plain APK)"
+        required: false
+        default: ""
   push:
     branches: [main]
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      BRANCH: ${{ github.event.inputs.branch }}
+      BRANCH_CFG: ${{ secrets[format('BRANCH_{0}', github.event.inputs.branch)] }}
     steps:
       - uses: actions/checkout@v4
       - name: Unzip project
         run: unzip -o lms-caller.zip
+      - name: Add branch config
+        if: env.BRANCH != ''
+        run: |
+          if [ -z "$BRANCH_CFG" ]; then echo "Secret BRANCH_$BRANCH not found"; exit 1; fi
+          mkdir -p lms-caller/app/src/main/assets
+          printf '%s' "$BRANCH_CFG" > lms-caller/app/src/main/assets/branch.json
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -20,7 +34,13 @@ jobs:
       - name: Build APK
         working-directory: lms-caller
         run: gradle assembleRelease --no-daemon
+      - name: Name APK
+        run: |
+          N="LMS-Caller${BRANCH:+-$BRANCH}"
+          mkdir out
+          cp lms-caller/app/build/outputs/apk/release/app-release.apk "out/$N.apk"
+          echo "NAME=$N" >> $GITHUB_ENV
       - uses: actions/upload-artifact@v4
         with:
-          name: LMS-Caller-APK
-          path: lms-caller/app/build/outputs/apk/release/app-release.apk
+          name: ${{ env.NAME }}
+          path: out/*.apk
