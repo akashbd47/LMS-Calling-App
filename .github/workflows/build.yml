@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BRANCH: ${{ github.event.inputs.branch }}
-      BRANCH_CFG: ${{ secrets[format('BRANCH_{0}', github.event.inputs.branch)] }}
+      BRANCH_CFG: ${{ secrets[format('{0}_BRANCH', github.event.inputs.branch)] }}
     steps:
       - uses: actions/checkout@v4
       - name: Unzip project
@@ -21,7 +21,7 @@ jobs:
       - name: Add branch config
         if: env.BRANCH != ''
         run: |
-          if [ -z "$BRANCH_CFG" ]; then echo "Secret BRANCH_$BRANCH not found"; exit 1; fi
+          if [ -z "$BRANCH_CFG" ]; then echo "Secret ${BRANCH}_BRANCH not found"; exit 1; fi
           mkdir -p lms-caller/app/src/main/assets
           printf '%s' "$BRANCH_CFG" > lms-caller/app/src/main/assets/branch.json
       - uses: actions/setup-java@v4
