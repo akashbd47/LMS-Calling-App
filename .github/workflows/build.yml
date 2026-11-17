@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BRANCH: ${{ github.event.inputs.branch }}
-      BRANCH_CFG: ${{ secrets[format('{0}_BRANCH', github.event.inputs.branch)] }}
+      BRANCH_CFG: ${{ secrets[format('{0}_BRANCH', github.event.inputs.branch)] || vars[format('{0}_BRANCH', github.event.inputs.branch)] }}
     steps:
       - uses: actions/checkout@v4
       - name: Unzip project
