@@ -17,12 +17,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Unzip project
-        run: unzip -o lms-caller.zip
+        run: unzip -o KB LMS.zip
       - name: Add branch config
         if: env.BRANCH != ''
         run: |
           if [ -z "$BRANCH_CFG" ]; then echo "Secret ${BRANCH}_BRANCH not found"; exit 1; fi
-          mkdir -p lms-caller/app/src/main/assets
+          mkdir -p KB LMS/app/src/main/assets
           printf '%s' "$BRANCH_CFG" > lms-caller/app/src/main/assets/branch.json
       - uses: actions/setup-java@v4
         with:
@@ -32,11 +32,11 @@ jobs:
         with:
           gradle-version: 8.9
       - name: Build APK
-        working-directory: lms-caller
+        working-directory: KB LMS
         run: gradle assembleRelease --no-daemon
       - name: Name APK
         run: |
-          N="LMS-Caller${BRANCH:+-$BRANCH}"
+          N="KB LMS ${BRANCH:+-$BRANCH}"
           mkdir out
           cp lms-caller/app/build/outputs/apk/release/app-release.apk "out/$N.apk"
           echo "NAME=$N" >> $GITHUB_ENV
